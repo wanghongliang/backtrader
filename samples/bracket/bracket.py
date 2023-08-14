@@ -123,7 +123,7 @@ class St(bt.Strategy):
                 pass  # do nothing in this case
 
 '''
-测试函数入口
+测试函数入口 2023-08-14
 '''
 def runstrat(args=None):
     args = parse_args(args)
