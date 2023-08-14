@@ -122,7 +122,9 @@ class St(bt.Strategy):
             if (len(self) - self.holdstart) >= self.p.hold:
                 pass  # do nothing in this case
 
-
+'''
+测试函数入口
+'''
 def runstrat(args=None):
     args = parse_args(args)
 
