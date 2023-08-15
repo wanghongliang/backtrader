@@ -146,6 +146,7 @@ SECONDS_PER_DAY = SECONDS_PER_MINUTE * MINUTES_PER_DAY
 MUSECONDS_PER_DAY = MUSECONDS_PER_SECOND * SECONDS_PER_DAY
 
 
+#把一个带小数部分的数字，转成datetime
 def num2date(x, tz=None, naive=True):
     # Same as matplotlib except if tz is None a naive datetime object
     # will be returned.
@@ -163,11 +164,17 @@ def num2date(x, tz=None, naive=True):
     """
 
     ix = int(x)
+
+    #把整型转成datetime类型
     dt = datetime.datetime.fromordinal(ix)
+
     remainder = float(x) - ix
+
+    #divmod函数  返回商和余
     hour, remainder = divmod(HOURS_PER_DAY * remainder, 1)
     minute, remainder = divmod(MINUTES_PER_HOUR * remainder, 1)
     second, remainder = divmod(SECONDS_PER_MINUTE * remainder, 1)
+
     microsecond = int(MUSECONDS_PER_SECOND * remainder)
     if microsecond < 10:
         microsecond = 0  # compensate for rounding errors
@@ -181,9 +188,7 @@ def num2date(x, tz=None, naive=True):
             dt = dt.replace(tzinfo=None)
     else:
         # If not tz has been passed return a non-timezoned dt
-        dt = datetime.datetime(
-            dt.year, dt.month, dt.day, int(hour), int(minute), int(second),
-            microsecond)
+        dt = datetime.datetime(   dt.year, dt.month, dt.day, int(hour), int(minute), int(second),  microsecond)
 
     if microsecond > 999990:  # compensate for rounding errors
         dt += datetime.timedelta(microseconds=1e6 - microsecond)

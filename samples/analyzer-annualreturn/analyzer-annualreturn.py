@@ -52,6 +52,7 @@ class LongShortStrategy(bt.Strategy):
     def stop(self):
         pass
 
+    #打印日志
     def log(self, txt, dt=None):
         if self.p.printout:
             dt = dt or self.data.datetime[0]
