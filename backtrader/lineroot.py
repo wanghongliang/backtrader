@@ -50,6 +50,9 @@ class MetaLineRoot(metabase.MetaParams):
         # Find the owner and store it
         # startlevel = 4 ... to skip intermediate call stacks
         ownerskip = kwargs.pop('_ownerskip', None)
+        #获取拥有当前对象的引用
+        #如：回测类LongShortStrategy的__init__方法中，创建了这个对象 sma = btind.MovAv.SMA(self.data, period=self.p.period)
+        #这里的_obj._owner就是LongShortStrategy对象
         _obj._owner = metabase.findowner(_obj,
                                          _obj._OwnerCls or LineMultiple,
                                          skip=ownerskip)
@@ -67,6 +70,14 @@ class LineRoot(with_metaclass(MetaLineRoot, object)):
         Iteration management
         Operation (dual/single operand) Management
         Rich Comparison operator definition
+
+        为Single和Multiple定义公共基和接口
+        LineXXX实例
+
+        时间管理
+        迭代管理
+        操作(双/单操作数)管理
+        丰富的比较运算符定义
     '''
     _OwnerCls = None
     _minperiod = 1
@@ -95,6 +106,7 @@ class LineRoot(with_metaclass(MetaLineRoot, object)):
 
     def qbuffer(self, savemem=0):
         '''Change the lines to implement a minimum size qbuffer scheme'''
+        #如果需要在程序中自行引发异常，则应使用 raise 语句
         raise NotImplementedError
 
     def minbuffer(self, size):

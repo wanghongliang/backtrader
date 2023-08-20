@@ -81,7 +81,7 @@ class MetaLineIterator(LineSeries.__class__):
         # for the first data 2 (data and data0)
         if _obj.datas:
             _obj.data = data = _obj.datas[0]
-
+            #enumerate遍历参数 data.lines
             for l, line in enumerate(data.lines):
                 linealias = data._getlinealias(l)
                 if linealias:

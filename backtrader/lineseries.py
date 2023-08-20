@@ -329,6 +329,7 @@ class MetaLineSeries(LineMultiple.__class__):
         attributes and create corresponding classes for them which take over
         the class attributes
         '''
+        print("MetaLineSeries __new__ name = %s" % name)
 
         # Get the aliases - don't leave it there for subclasses
         aliases = dct.setdefault('alias', ())
@@ -405,6 +406,7 @@ class MetaLineSeries(LineMultiple.__class__):
 
     def donew(cls, *args, **kwargs):
         '''
+        拦截实例创建，通过创建相应的实例变量来接管lines/plotinfo/plotlines类属性，并为“lines”和其中包含的“lines”添加别名
         Intercept instance creation, take over lines/plotinfo/plotlines
         class attributes by creating corresponding instance variables and add
         aliases for "lines" and the "lines" held within it

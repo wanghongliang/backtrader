@@ -28,7 +28,9 @@ from .lineiterator import LineIterator, IndicatorBase
 from .lineseries import LineSeriesMaker, Lines
 from .metabase import AutoInfoClass
 
-
+#IndicatorBase.__class__ 是一个类
+# 为什么不用IndicatorBase， 这里用 IndicatorBase.__class__
+# 答：因为用IndicatorBase.__class__ 可以忽略IndicatorBase类的 __call__ , __new__ 方法
 class MetaIndicator(IndicatorBase.__class__):
     _refname = '_indcol'
     _indcol = dict()
@@ -48,6 +50,9 @@ class MetaIndicator(IndicatorBase.__class__):
     # inside another object, the minperiod information carried over
     # influences the first usage when being modified during the 2nd usage
 
+    #__call__方法是一个辅助方法 返回 type
+    #__call__ 在type类中时， 实例化类时，会被调用 o = Type()
+    #__call__ 在object类中时，对象像方法一样调用时，生效。 o=Object() o(123)
     def __call__(cls, *args, **kwargs):
         if not cls._icacheuse:
             return super(MetaIndicator, cls).__call__(*args, **kwargs)

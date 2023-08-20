@@ -121,6 +121,11 @@ else:
 
 
 # This is from Armin Ronacher from Flash simplified later by six
+# 为什么用这个方法，而不是直接继承类
+# 答：
+# 调用这个方法时,并不会触发metaclass类的__new__方法, 只有子类__new__时，调用
+# 1. 所以，这个方法方便延迟调用，如果用 type(name,bases,args),会立即调用
+# 2. 因为延迟调用，系统调用时会带上继承者的属性信息[重要]
 def with_metaclass(meta, *bases):
     """Create a base class with a metaclass."""
     # This requires a bit of explanation: the basic idea is to make a dummy
@@ -128,6 +133,17 @@ def with_metaclass(meta, *bases):
     # the actual metaclass.
     class metaclass(meta):
 
+        #这个方法，子类加载时会调用
         def __new__(cls, name, this_bases, d):
+            #返回一个类
             return meta(name, bases, d)
+        
+  
+    #__new__ 是一个静态方法
+
+    # str('temporary_class2222') 指定类名。这将成为类的属性。__name__
+    # type.__new__ 第一个参数必须是 type 的子类， 因为要用 type 类的 __new__方法
+    # 第2个参数是类名
+    # type.__new__ 和 type(name,parent,attr)
+    # 区别是， type.__new__ 指定一个type类的__new__方法来调用，生成新的class
     return type.__new__(metaclass, str('temporary_class'), (), {})

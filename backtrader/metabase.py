@@ -41,8 +41,10 @@ def findbases(kls, topclass):
 
 def findowner(owned, cls, startlevel=2, skip=None):
     # skip this frame and the caller's -> start at 2
+    #itertools 是一个迭代器，一个循环
     for framelevel in itertools.count(startlevel):
         try:
+            #sys._getframe() 用于查看函数被什么函数调用以及被第几行调用及被调用函数所在文件
             frame = sys._getframe(framelevel)
         except ValueError:
             # Frame depth exceeded ... no owner ... break away
@@ -62,7 +64,9 @@ def findowner(owned, cls, startlevel=2, skip=None):
 
     return None
 
-
+'''
+所有的类加上基类的方法
+'''
 class MetaBase(type):
     def doprenew(cls, *args, **kwargs):
         return cls, args, kwargs
@@ -81,6 +85,8 @@ class MetaBase(type):
     def dopostinit(cls, _obj, *args, **kwargs):
         return _obj, args, kwargs
 
+
+    #改写创建对象的初始化调用方式
     def __call__(cls, *args, **kwargs):
         cls, args, kwargs = cls.doprenew(*args, **kwargs)
         _obj, args, kwargs = cls.donew(*args, **kwargs)
@@ -205,6 +211,8 @@ class MetaParams(MetaBase):
         # Remove params from class definition to avoid inheritance
         # (and hence "repetition")
         newparams = dct.pop('params', ())
+
+        print("cls.name=%s" % name)
 
         packs = 'packages'
         newpackages = tuple(dct.pop(packs, ()))  # remove before creation

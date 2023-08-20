@@ -56,8 +56,10 @@ class MovingAverage(object):
         cls._movavs.append(regcls)
 
         clsname = regcls.__name__
+        #setattr(object, name, value)
         setattr(cls, clsname, regcls)
 
+        #example : MovingAverageSimple
         clsalias = ''
         if clsname.endswith('MovingAverage'):
             clsalias = clsname.split('MovingAverage')[0]
