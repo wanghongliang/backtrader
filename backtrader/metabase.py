@@ -97,6 +97,9 @@ class MetaBase(type):
 
 
 class AutoInfoClass(object):
+    #OrderedDict 对象方法转成AutoInfoClass的对象方法
+    # lambda cls: OrderedDict() 返回的是一个方法 ： def funcName(cls){ return OrderedDict()}
+    # classmethod( 方法 ) 转成类方法
     _getpairsbase = classmethod(lambda cls: OrderedDict())
     _getpairs = classmethod(lambda cls: OrderedDict())
     _getrecurse = classmethod(lambda cls: False)
@@ -114,6 +117,7 @@ class AutoInfoClass(object):
                 obasesinfo.update(obase._getpairs())
 
         # update the info of this class (base) with that from the other bases
+        # 添加值
         baseinfo.update(obasesinfo)
 
         # The info of the new class is a copy of the full base info
@@ -146,6 +150,7 @@ class AutoInfoClass(object):
         setattr(newcls, '_getpairs', classmethod(lambda cls: clsinfo.copy()))
         setattr(newcls, '_getrecurse', classmethod(lambda cls: recurse))
 
+        #把(('name',value),)格式，转换成 类属性
         for infoname, infoval in info2add.items():
             if recurse:
                 recursecls = getattr(newcls, infoname, AutoInfoClass)
@@ -210,9 +215,10 @@ class MetaParams(MetaBase):
     def __new__(meta, name, bases, dct):
         # Remove params from class definition to avoid inheritance
         # (and hence "repetition")
+        # 这里解析params类参数
         newparams = dct.pop('params', ())
 
-        print("cls.name=%s" % name)
+        #print("cls.name=%s" % name)
 
         packs = 'packages'
         newpackages = tuple(dct.pop(packs, ()))  # remove before creation

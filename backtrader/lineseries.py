@@ -328,17 +328,21 @@ class MetaLineSeries(LineMultiple.__class__):
         Intercept class creation, identifiy lines/plotinfo/plotlines class
         attributes and create corresponding classes for them which take over
         the class attributes
+        拦截类创建，识别 线/绘图信息/绘图线类属性，并为它们创建相应的类，接管类属性
+
         '''
-        print("MetaLineSeries __new__ name = %s" % name)
+        #print("MetaLineSeries __new__ name = %s" % name)
 
         # Get the aliases - don't leave it there for subclasses
+        # 从kargs中获取alias数据
         aliases = dct.setdefault('alias', ())
         aliased = dct.setdefault('aliased', '')
 
         # Remove the line definition (if any) from the class creation
-        linesoverride = dct.pop('linesoverride', False)
-        newlines = dct.pop('lines', ())
-        extralines = dct.pop('extralines', 0)
+        # 删除类中定义的属性
+        linesoverride   = dct.pop('linesoverride', False)
+        newlines        = dct.pop('lines', ())
+        extralines      = dct.pop('extralines', 0)
 
         # remove the new plotinfo/plotlines definition if any
         newlalias = dict(dct.pop('linealias', {}))
@@ -351,8 +355,12 @@ class MetaLineSeries(LineMultiple.__class__):
         cls = super(MetaLineSeries, meta).__new__(meta, name, bases, dct)
 
         # Check the line aliases before creating the lines
+        # 在创建行之前检查行别名
         lalias = getattr(cls, 'linealias', AutoInfoClass)
+        # x.linealias
         oblalias = [x.linealias for x in bases[1:] if hasattr(x, 'linealias')]
+
+        #lalias._derive 创建一个新类
         cls.linealias = la = lalias._derive('la_' + name, newlalias, oblalias)
 
         # Get the actual lines or a default
@@ -361,6 +369,7 @@ class MetaLineSeries(LineMultiple.__class__):
         # Create a subclass of the lines class with our name and newlines
         # and put it in the class
         morebaseslines = [x.lines for x in bases[1:] if hasattr(x, 'lines')]
+        # lalias._derive 创建一个新类
         cls.lines = lines._derive(name, newlines, extralines, morebaseslines,
                                   linesoverride, lalias=la)
 
@@ -397,8 +406,10 @@ class MetaLineSeries(LineMultiple.__class__):
                 alias = alias[0]
                 newdct['plotinfo'] = dict(plotname=aliasplotname)
 
+            #cls 的父类，有可能是对象
             newcls = type(str(alias), (cls,), newdct)
             clsmodule = sys.modules[cls.__module__]
+            #在系统中，加入新的类
             setattr(clsmodule, alias, newcls)
 
         # return the class
