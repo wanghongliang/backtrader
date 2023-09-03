@@ -69,6 +69,7 @@ class MetaLineIterator(LineSeries.__class__):
 
         # If no datas have been passed to an indicator ... use the
         # main datas of the owner, easing up adding "self.data" ...
+        # 这里很重要，如果实例化指标时，没有带数据，就用 strategry的数据，就是调用者带的数据
         if not _obj.datas and isinstance(_obj, (IndicatorBase, ObserverBase)):
             _obj.datas = _obj._owner.datas[0:mindatas]
 
@@ -98,8 +99,7 @@ class MetaLineIterator(LineSeries.__class__):
                     setattr(_obj, 'data%d_%d' % (d, l), line)
 
         # Parameter values have now been set before __init__
-        _obj.dnames = DotDict([(d._name, d)
-                               for d in _obj.datas if getattr(d, '_name', '')])
+        _obj.dnames = DotDict([(d._name, d)   for d in _obj.datas if getattr(d, '_name', '')])
 
         return _obj, newargs, kwargs
 
@@ -117,8 +117,7 @@ class MetaLineIterator(LineSeries.__class__):
         # No calculation can take place until all datas have yielded "data"
         # A data could be an indicator and it could take x bars until
         # something is produced
-        _obj._minperiod = \
-            max([x._minperiod for x in _obj.datas] or [_obj._minperiod])
+        _obj._minperiod =  max([x._minperiod for x in _obj.datas] or [_obj._minperiod])
 
         # The lines carry at least the same minperiod as
         # that provided by the datas
@@ -128,8 +127,7 @@ class MetaLineIterator(LineSeries.__class__):
         return _obj, args, kwargs
 
     def dopostinit(cls, _obj, *args, **kwargs):
-        _obj, args, kwargs = \
-            super(MetaLineIterator, cls).dopostinit(_obj, *args, **kwargs)
+        _obj, args, kwargs =    super(MetaLineIterator, cls).dopostinit(_obj, *args, **kwargs)
 
         # my minperiod is as large as the minperiod of my lines
         _obj._minperiod = max([x._minperiod for x in _obj.lines])

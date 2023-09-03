@@ -105,7 +105,9 @@ class LineRoot(with_metaclass(MetaLineRoot, object)):
         return self._operationown_stage2(operation)
 
     def qbuffer(self, savemem=0):
-        '''Change the lines to implement a minimum size qbuffer scheme'''
+        '''Change the lines to implement a minimum size qbuffer scheme
+        更改行以实现最小的qbuffer方案
+        '''
         #如果需要在程序中自行引发异常，则应使用 raise 语句
         raise NotImplementedError
 
@@ -308,6 +310,7 @@ class LineRoot(with_metaclass(MetaLineRoot, object)):
 class LineMultiple(LineRoot):
     '''
     Base class for LineXXX instances that hold more than one line
+    多行基类
     '''
     def reset(self):
         self._stage1()

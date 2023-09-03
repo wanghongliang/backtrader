@@ -61,12 +61,12 @@ class Cerebro(with_metaclass(MetaParams, object)):
     '''Params:
 
       - ``preload`` (default: ``True``)
-
+        数据是否预加载
         Whether to preload the different ``data feeds`` passed to cerebro for
         the Strategies
 
       - ``runonce`` (default: ``True``)
-
+        指标是否用矢量模式运行
         Run ``Indicators`` in vectorized mode to speed up the entire system.
         Strategies and Observers will always be run on an event based basis
 
@@ -188,6 +188,10 @@ class Cerebro(with_metaclass(MetaParams, object)):
         basis with the strategy method ``set_tradehistory``
 
       - ``optdatas`` (default: ``True``)
+
+        如果“True”和优化（并且系统可以“预加载”并使用“runonce”），则数据预加载将在主进程中仅执行一次，以节省时间和资源。
+
+        测试显示，从“83”秒内的样本执行速度提高到“66”，速度约为“20%”
 
         If ``True`` and optimizing (and the system can ``preload`` and use
         ``runonce``, data preloading will be done only once in the main process
@@ -1028,10 +1032,13 @@ class Cerebro(with_metaclass(MetaParams, object)):
         self._event_stop = True  # signal a stop has been requested
 
     def run(self, **kwargs):
-        '''The core method to perform backtesting. Any ``kwargs`` passed to it
+        '''
+        执行回测的核心方法。传递给它的任何“kwargs”都会影响实例化时使用的标准参数“Cerebro”的值。
+        The core method to perform backtesting. Any ``kwargs`` passed to it
         will affect the value of the standard parameters ``Cerebro`` was
         instantiated with.
 
+        没有数据，直接返回
         If ``cerebro`` has not datas the method will immediately bail out.
 
         It has different return values:
@@ -1047,12 +1054,16 @@ class Cerebro(with_metaclass(MetaParams, object)):
         if not self.datas:
             return []  # nothing can be run
 
+        #params is AutoInfoClass object
         pkeys = self.params._getkeys()
+
+        #这里把传进来的参数，覆盖系统参数
         for key, val in kwargs.items():
             if key in pkeys:
                 setattr(self.params, key, val)
 
         # Manage activate/deactivate object cache
+        # 重新缓存
         linebuffer.LineActions.cleancache()  # clean cache
         indicator.Indicator.cleancache()  # clean cache
 
@@ -1121,9 +1132,11 @@ class Cerebro(with_metaclass(MetaParams, object)):
                              *sargs,
                              **skwargs)
 
+        #策略
         if not self.strats:  # Datas are present, add a strategy
             self.addstrategy(Strategy)
 
+        #self.strats 策略数组
         iterstrats = itertools.product(*self.strats)
         if not self._dooptimize or self.p.maxcpus == 1:
             # If no optimmization is wished ... or 1 core is to be used
@@ -1175,6 +1188,8 @@ class Cerebro(with_metaclass(MetaParams, object)):
         self._init_stcount()
 
         self.runningstrats = runstrats = list()
+
+        #交易所
         for store in self.stores:
             store.start()
 
@@ -1183,12 +1198,13 @@ class Cerebro(with_metaclass(MetaParams, object)):
             if hasattr(self._broker, 'set_coo'):
                 self._broker.set_coo(True)
 
+        #添加直接在经纪商中执行的订单历史记录，以进行绩效评估
         if self._fhistory is not None:
             self._broker.set_fund_history(self._fhistory)
 
         for orders, onotify in self._ohistory:
             self._broker.add_order_history(orders, onotify)
-
+        #默认是BackBroker，模拟券商
         self._broker.start()
 
         for feed in self.feeds:
@@ -1206,7 +1222,7 @@ class Cerebro(with_metaclass(MetaParams, object)):
 
         # self._plotfillers = [list() for d in self.datas]
         # self._plotfillers2 = [list() for d in self.datas]
-
+        #加载数据
         if not predata:
             for data in self.datas:
                 data.reset()
@@ -1359,6 +1375,7 @@ class Cerebro(with_metaclass(MetaParams, object)):
 
     def _brokernotify(self):
         '''
+        向策略发送任何经纪商通知的内部方法
         Internal method which kicks the broker and delivers any broker
         notification to the strategy
         '''
@@ -1666,6 +1683,7 @@ class Cerebro(with_metaclass(MetaParams, object)):
 
         while True:
             # Check next incoming date in the datas
+            #AbstractDataBase.advance_peek() 方法，返回datetime line 的下一个索引 self.lines.datetime[1]
             dts = [d.advance_peek() for d in datas]
             dt0 = min(dts)
             if dt0 == float('inf'):
@@ -1681,7 +1699,8 @@ class Cerebro(with_metaclass(MetaParams, object)):
                 else:
                     # self._plotfillers[i].append(slen)
                     pass
-
+            #根据当前的时间，调用定时器
+            #如果 cheat = “真”，则计时器将在经纪人有机会评估订单之前被调用。这提供了根据开盘价发出订单的机会，例如在会议开始之前
             self._check_timers(runstrats, dt0, cheat=True)
 
             if self.p.cheat_on_open:

@@ -285,7 +285,7 @@ class Strategy(with_metaclass(MetaStrategy, StrategyBase)):
         if minperstatus < 0:
             self.next_open()
         elif minperstatus == 0:
-            self.nextstart_open()  # only called for the 1st value
+            self.nextstart_open()  # only called for the 1st value  仅调用第一个值
         else:
             self.prenext_open()
 
@@ -296,9 +296,11 @@ class Strategy(with_metaclass(MetaStrategy, StrategyBase)):
 
         if self._oldsync:
             # Strategy has not been reset, the line is there
+            # 策略尚未重置，线路就在那里
             self.advance()
         else:
             # strategy has been reset to beginning. advance step by step
+            # 策略已重置为开始。一步一个脚印地前进
             self.forward()
 
         self.lines.datetime[0] = dt

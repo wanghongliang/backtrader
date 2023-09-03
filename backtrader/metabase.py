@@ -100,7 +100,9 @@ class AutoInfoClass(object):
     #OrderedDict 对象方法转成AutoInfoClass的对象方法
     # lambda cls: OrderedDict() 返回的是一个方法 ： def funcName(cls){ return OrderedDict()}
     # classmethod( 方法 ) 转成类方法
+    #getpairsbase返回包含当前类所有父类参数信息的OrderedDict
     _getpairsbase = classmethod(lambda cls: OrderedDict())
+    #_getpairs返回包含当前类和当前类所有父类参数信息的OrderedDict
     _getpairs = classmethod(lambda cls: OrderedDict())
     _getrecurse = classmethod(lambda cls: False)
 
@@ -145,8 +147,7 @@ class AutoInfoClass(object):
         newcls = type(newclsname, (cls,), {})
         setattr(clsmodule, newclsname, newcls)
 
-        setattr(newcls, '_getpairsbase',
-                classmethod(lambda cls: baseinfo.copy()))
+        setattr(newcls, '_getpairsbase',   classmethod(lambda cls: baseinfo.copy()))
         setattr(newcls, '_getpairs', classmethod(lambda cls: clsinfo.copy()))
         setattr(newcls, '_getrecurse', classmethod(lambda cls: recurse))
 

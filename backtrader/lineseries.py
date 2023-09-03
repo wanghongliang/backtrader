@@ -40,7 +40,8 @@ from .lineroot import LineRoot, LineSingle, LineMultiple
 from .metabase import AutoInfoClass
 from . import metabase
 
-
+#描述器使用指南
+#https://docs.python.org/zh-cn/3/howto/descriptor.html
 class LineAlias(object):
     ''' Descriptor class that store a line reference and returns that line
     from the owner
@@ -91,6 +92,8 @@ class Lines(object):
     The class can autosubclass itself (_derive) to hold new lines keeping them
     in the defined order.
     '''
+
+    #声明一些类方法
     _getlinesbase = classmethod(lambda cls: ())
     _getlines = classmethod(lambda cls: ())
     _getlinesextra = classmethod(lambda cls: 0)
@@ -110,9 +113,12 @@ class Lines(object):
         the baseclass will be the topmost class "Lines". This is intended to
         create a new hierarchy
         '''
+
+        #先把lines 和 otherbases 的lines合并
         obaseslines = ()
         obasesextralines = 0
 
+        #Tuple(元组)
         for otherbase in otherbases:
             if isinstance(otherbase, tuple):
                 obaseslines += otherbase
@@ -127,11 +133,17 @@ class Lines(object):
             baselines = ()
             baseextralines = 0
 
+        #如果不需要覆盖，这里就合并 otherbase 和 _getlines()
         clslines = baselines + lines
+        #extralines
         clsextralines = baseextralines + extralines
+
+        #新加的 obaseslines 和 lines
         lines2add = obaseslines + lines
 
         # str for Python 2/3 compatibility
+        #如果覆盖，就创建一个新的 Lines
+        #否者就直接用调用的类
         basecls = cls if not linesoverride else Lines
 
         newcls = type(str(cls.__name__ + '_' + name), (basecls,), {})
@@ -202,6 +214,7 @@ class Lines(object):
         provided "initlines"
         '''
         self.lines = list()
+        #这里重要： lines = ('open','higt',) 这些类属性，包装成 LineAlias(line) , obj.open = LineAlias__object__.__get__(return obj.lines[line])
         for line, linealias in enumerate(self._getlines()):
             kwargs = dict()
             self.lines.append(LineBuffer(**kwargs))
@@ -230,6 +243,7 @@ class Lines(object):
 
     def __getitem__(self, line):
         '''
+        当对象是序列时，键是整数。当对象是映射时（字典），键是任意值
         Proxy line operation
         '''
         return self.lines[line]
@@ -351,6 +365,9 @@ class MetaLineSeries(LineMultiple.__class__):
         newplotinfo = dict(dct.pop('plotinfo', {}))
         newplotlines = dict(dct.pop('plotlines', {}))
 
+        if name == 'MovingAverageBase':
+            print(name, bases  )
+
         # Create the class - pulling in any existing "lines"
         cls = super(MetaLineSeries, meta).__new__(meta, name, bases, dct)
 
@@ -364,14 +381,17 @@ class MetaLineSeries(LineMultiple.__class__):
         cls.linealias = la = lalias._derive('la_' + name, newlalias, oblalias)
 
         # Get the actual lines or a default
+        #这里调用的是类的属性lines，DataSeries.lines
         lines = getattr(cls, 'lines', Lines)
+
+        if name == 'MovingAverageSimple':
+            print(name, bases, dict,  lines , hasattr(cls,'lines') )
 
         # Create a subclass of the lines class with our name and newlines
         # and put it in the class
         morebaseslines = [x.lines for x in bases[1:] if hasattr(x, 'lines')]
         # lalias._derive 创建一个新类
-        cls.lines = lines._derive(name, newlines, extralines, morebaseslines,
-                                  linesoverride, lalias=la)
+        cls.lines = lines._derive(name, newlines, extralines, morebaseslines,  linesoverride, lalias=la)
 
         # Get a copy from base class plotinfo/plotlines (created with the
         # class or set a default)
@@ -379,8 +399,7 @@ class MetaLineSeries(LineMultiple.__class__):
         plotlines = getattr(cls, 'plotlines', AutoInfoClass)
 
         # Create a plotinfo/plotlines subclass and set it in the class
-        morebasesplotinfo = \
-            [x.plotinfo for x in bases[1:] if hasattr(x, 'plotinfo')]
+        morebasesplotinfo =    [x.plotinfo for x in bases[1:] if hasattr(x, 'plotinfo')]
         cls.plotinfo = plotinfo._derive('pi_' + name, newplotinfo,
                                         morebasesplotinfo)
 
@@ -389,10 +408,8 @@ class MetaLineSeries(LineMultiple.__class__):
         for line in newlines:
             newplotlines.setdefault(line, dict())
 
-        morebasesplotlines = \
-            [x.plotlines for x in bases[1:] if hasattr(x, 'plotlines')]
-        cls.plotlines = plotlines._derive(
-            'pl_' + name, newplotlines, morebasesplotlines, recurse=True)
+        morebasesplotlines =   [x.plotlines for x in bases[1:] if hasattr(x, 'plotlines')]
+        cls.plotlines = plotlines._derive(  'pl_' + name, newplotlines, morebasesplotlines, recurse=True)
 
         # create declared class aliases (a subclass with no modifications)
         for alias in aliases:
@@ -435,6 +452,8 @@ class MetaLineSeries(LineMultiple.__class__):
         _obj.plotinfo = plotinfo
 
         # _obj.lines shadows the lines (class) definition in the class
+        # 对象的lines属性，实例化 <class 'backtrader.lineseries.Lines_LineSeries_DataSeries_...'>
+        # <class 'backtrader.lineseries.Lines_LineSeries_DataSeries_OHLC_OHLCDateTime_AbstractDataBase_DataBase_CSVDataBase_BacktraderCSVData'>
         _obj.lines = cls.lines()
 
         # _obj.plotinfo shadows the plotinfo (class) definition in the class
@@ -445,6 +464,8 @@ class MetaLineSeries(LineMultiple.__class__):
         if _obj.lines.fullsize():
             _obj.line = _obj.lines[0]
 
+
+        #enumerate() 函数用于将一个可遍历的数据对象(如列表、元组或字符串)组合为一个索引序列，同时列出数据和数据下标，一般用在 for 循环当中。
         for l, line in enumerate(_obj.lines):
             setattr(_obj, 'line_%s' % l, _obj._getlinealias(l))
             setattr(_obj, 'line_%d' % l, line)

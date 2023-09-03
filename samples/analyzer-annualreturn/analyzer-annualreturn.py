@@ -31,6 +31,28 @@ import backtrader.indicators as btind
 from backtrader.analyzers import (SQN, AnnualReturn, TimeReturn, SharpeRatio,
                                   TradeAnalyzer)
 
+class MyStrategy(bt.Strategy):
+
+    def log(self, text, dt=None):
+        ''' Logging function for this strategy'''
+        dt = dt or self.datas[0].datetime.date(0)
+        print('【策略A】%s, %s' % (dt.isoformat(), text))
+
+    def __init__(self):
+        self.log("__init__()")
+        self.dataopen = self.datas[0].open
+
+    def next(self):
+        # 输出当日价格
+        self.log('Open={0}, 昨Open={1}, 前Open={2}'.format(self.dataopen[0], self.dataopen[-1], self.dataopen[-2]))
+
+        day = len(self)
+        if day == 3:
+            self.buy()
+            self.log("A 买入")
+        elif day == 5:
+            self.close()
+            self.log("A 平仓")
 
 class LongShortStrategy(bt.Strategy):
     '''This strategy buys/sells upong the close price crossing
@@ -66,6 +88,7 @@ class LongShortStrategy(bt.Strategy):
         # Create SMA on 2nd data
         sma = btind.MovAv.SMA(self.data, period=self.p.period)
         # Create a CrossOver Signal from close an moving average
+        # self.cmpval = self.data.close(-1) > sma
         self.signal = btind.CrossOver(self.data.close, sma)
         self.signal.csv = self.p.csvcross
 
@@ -143,6 +166,8 @@ def runstrategy():
                         onlylong=args.onlylong,
                         csvcross=args.csvcross,
                         stake=args.stake)
+
+    cerebro.addstrategy(MyStrategy)
 
     # Add the commission - only stocks like a for each operation
     cerebro.broker.setcash(args.cash)
@@ -229,7 +254,7 @@ def parse_args():
     parser.add_argument('--stake', default=1, type=int,
                         help='Stake to apply in each operation')
 
-    parser.add_argument('--plot', '-p', action='store_true',
+    parser.add_argument('--plot', '-p',default=True, action='store_true',
                         help='Plot the read data')
 
     parser.add_argument('--numfigs', '-n', default=1,

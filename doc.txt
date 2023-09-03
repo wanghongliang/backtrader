@@ -1,0 +1,15 @@
+项目环境：
+
+1. 查看当前环境：
+conda info -e
+
+2. 切换到指定版本
+activate  c38
+
+3. 建立项目环境
+python -m venv env
+
+4. 进入环境
+cmd.exe .\env\Scripts\activate.bat  
+
+pip install matplotlib

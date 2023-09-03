@@ -76,8 +76,11 @@ class MetaIndicator(IndicatorBase.__class__):
         # Initialize the class
         super(MetaIndicator, cls).__init__(name, bases, dct)
 
-        if not cls.aliased and \
-           name != 'Indicator' and not name.startswith('_'):
+        if name == 'MovingAverageSimple':
+            print(name, bases, dct )
+
+
+        if not cls.aliased and name != 'Indicator' and not name.startswith('_'):
             refattr = getattr(cls, cls._refname)
             refattr[name] = cls
 

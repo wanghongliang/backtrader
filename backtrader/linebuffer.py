@@ -49,6 +49,10 @@ NAN = float('NaN')
 
 class LineBuffer(LineSingle):
     '''
+    LineBuffer 定义了“array.array”（或列表）的接口，其中索引 0 指向输入和输出处于活动状态的项目。
+    正索引从过去获取值（左侧） 负索引从未来获取值（如果数组已在右侧扩展）
+    使用此行为，无需将索引传递给必须使用其他实体生成的当前值的实体：该值始终可在“0”处到达。
+
     LineBuffer defines an interface to an "array.array" (or list) in which
     index 0 points to the item which is active for input and output.
 
@@ -97,6 +101,7 @@ class LineBuffer(LineSingle):
         else:  # default: UnBounded
             self._idx = idx
 
+    #声明一个可变方法 linebuffer.idx 等于 get_idx()  linebuffer.idx = 5 等于 linebuffer.set_idx
     idx = property(get_idx, set_idx)
 
     def reset(self):
@@ -129,8 +134,11 @@ class LineBuffer(LineSingle):
         return []
 
     def minbuffer(self, size):
-        '''The linebuffer must guarantee the minimum requested size to be
-        available.
+        '''
+        linebuffer必须保证可用的最小请求大小。
+        在非dqbuffer模式下，这总是正确的(当然，直到数据在开始时被填充，有更少的值，但框架中的minperiod应该考虑到这一点。)
+        在dqbuffer模式中，如果当前小于请求，则必须为此调整缓冲区
+        The linebuffer must guarantee the minimum requested size to be   available.
 
         In non-dqbuffer mode, this is always true (of course until data is
         filled at the beginning, there are less values, but minperiod in the
@@ -303,6 +311,8 @@ class LineBuffer(LineSingle):
         Keyword Args:
             binding (LineBuffer): another line that must be set when this line
             becomes a value
+
+            binding (LineBuffer):当这一行变成值时必须设置的另一行
         '''
         self.bindings.append(binding)
         # record in the binding when the period is starting (never sooner
@@ -499,6 +509,9 @@ class LineBuffer(LineSingle):
 class MetaLineActions(LineBuffer.__class__):
     '''
     Metaclass for Lineactions
+
+    在初始化之前扫描实例以查找 LineBuffer（或父类 LineSingle）实例，以计算此实例的最小周期
+    postinit 它将实例注册到所有者（请记住，所有者已在 LineRoot 的基本元类中找到）
 
     Scans the instance before init for LineBuffer (or parentclass LineSingle)
     instances to calculate the minperiod for this instance

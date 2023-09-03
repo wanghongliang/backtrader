@@ -37,8 +37,11 @@ class BacktraderCSVData(feed.CSVDataBase):
     '''
 
     def _loadline(self, linetokens):
+
+        #创建一个迭代器对象
         itoken = iter(linetokens)
 
+        #进行一次迭代
         dttxt = next(itoken)  # Format is YYYY-MM-DD - skip char 4 and 7
         dt = date(int(dttxt[0:4]), int(dttxt[5:7]), int(dttxt[8:10]))
 
@@ -47,7 +50,7 @@ class BacktraderCSVData(feed.CSVDataBase):
             tm = time(int(tmtxt[0:2]), int(tmtxt[3:5]), int(tmtxt[6:8]))
         else:
             tm = self.p.sessionend  # end of the session parameter
-
+        #self.lines.datetime[0] = Lines.datetime.__setitem__{   self.array[self.idx + 0] = value }
         self.lines.datetime[0] = date2num(datetime.combine(dt, tm))
         self.lines.open[0] = float(next(itoken))
         self.lines.high[0] = float(next(itoken))
